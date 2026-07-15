@@ -25,17 +25,16 @@ void bjetEventLoop::Loop()
    TFile *output = new TFile("output.root", "RECREATE");
 
    // histograms
-   // TODO add axis titles
-   TH1F *h_jet_pt = new TH1F("h_jet_pt", "Jet transverse momentum", 100, 0.0, 200.0);
-   TH1F *h_jet_eta = new TH1F("h_jet_eta", "Jet pseudorapidity", 100, -5.0, 5.0);
-   TH1F *h_jet_phi = new TH1F("h_jet_phi", "Jet phi", 100, -TMath::Pi(), TMath::Pi());
-   
-   TH1F *h_true_jet_pt = new TH1F("h_true_jet_pT", "True Jet transverse momentum", 100, 0.0, 200.0);
-   TH1F *h_true_jet_eta = new TH1F("h_true_jet_eta", "True Jet pseudorapidity", 100, -5.0, 5.0);
-   TH1F *h_true_jet_phi = new TH1F("h_true_jet_phi", "True Jet phi", 100, -TMath::Pi(), TMath::Pi());
+   TH1F *h_jet_pt = new TH1F("h_jet_pt", "Reconstructed Jet p_{T};p_{T} [GeV];Jets", 100, 0.0, 200.0);
+   TH1F *h_jet_eta = new TH1F("h_jet_eta", "Reconstructed Jet #eta;#eta;Jets", 100, -5.0, 5.0);
+   TH1F *h_jet_phi = new TH1F("h_jet_phi", "Reconstructed Jet #phi;#phi [rad];Jets", 100, -TMath::Pi(), TMath::Pi());
 
-   TH1F *h_delta_r = new TH1F("h_delta_r", "Delta R", 100, 0.0, 10.0);
-   TH1F *h_delta_r_matched_pairs = new TH1F("h_delta_r_matched_pairs", "Delta R matched pairs", 100, 0.0, 50.0);
+   TH1F *h_true_jet_pt = new TH1F("h_true_jet_pT", "Truth Jet p_{T};p_{T} [GeV];Jets", 100, 0.0, 200.0);
+   TH1F *h_true_jet_eta = new TH1F("h_true_jet_eta", "Truth Jet #eta;#eta;Jets", 100, -5.0, 5.0);
+   TH1F *h_true_jet_phi = new TH1F("h_true_jet_phi", "Truth Jet #phi;#phi [rad];Jets", 100, -TMath::Pi(), TMath::Pi());
+
+   TH1F *h_delta_r = new TH1F("h_delta_r", "#DeltaR (reco, truth);#DeltaR;Pairs", 100, 0.0, 10.0);
+   TH1F *h_delta_r_matched_pairs = new TH1F("h_delta_r_matched_pairs", "#DeltaR matched pairs;#DeltaR;Pairs", 100, 0.0, 10.0);
 
    h_jet_pt->SetOption("HIST");
    h_jet_eta->SetOption("HIST");
@@ -65,8 +64,7 @@ void bjetEventLoop::Loop()
          for (int i = 0; i < jet_pt->size(); i++)
          {
             double deta = jet_eta->at(i) - truth_jet_eta->at(j);
-            // double check ?
-            double dphi = TVector2::Phi_mpi_pi(jet_phi->at(i) - truth_jet_phi->at(j));
+            double dphi = fabs(TVector2::Phi_mpi_pi(jet_phi->at(i) - truth_jet_phi->at(j)));
             double dr = sqrt(deta*deta + dphi*dphi);
             h_delta_r->Fill(dr, MC_weight);
             if (dr < 0.3)
