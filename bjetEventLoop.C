@@ -24,6 +24,10 @@ void bjetEventLoop::Loop()
 
    TFile *output = new TFile("output.root", "RECREATE");
 
+   // discriminant variables
+   const double f_c = 0.2;
+   const double f_tau = 0.01;
+
    // histograms
    TH1F *h_jet_pt = new TH1F("h_jet_pt", "Reconstructed Jet p_{T};p_{T} [GeV];Jets", 100, 0.0, 200.0);
    TH1F *h_jet_eta = new TH1F("h_jet_eta", "Reconstructed Jet #eta;#eta;Jets", 100, -5.0, 5.0);
@@ -33,8 +37,26 @@ void bjetEventLoop::Loop()
    TH1F *h_true_jet_eta = new TH1F("h_true_jet_eta", "Truth Jet #eta;#eta;Jets", 100, -5.0, 5.0);
    TH1F *h_true_jet_phi = new TH1F("h_true_jet_phi", "Truth Jet #phi;#phi [rad];Jets", 100, -TMath::Pi(), TMath::Pi());
 
+   TH1F *h_true_bjet_pt = new TH1F("h_true_bjet_pT", "Truth b-Jet p_{T};p_{T} [GeV];Jets", 100, 0.0, 200.0);
+   TH1F *h_true_bjet_eta = new TH1F("h_true_bjet_eta", "Truth b-Jet #eta;#eta;Jets", 100, -5.0, 5.0);
+   TH1F *h_true_bjet_phi = new TH1F("h_true_bjet_phi", "Truth b-Jet #phi;#phi [rad];Jets", 100, -TMath::Pi(), TMath::Pi());
+
+   TH1F *h_true_not_bjet_pt = new TH1F("h_true_not_bjet_pT", "Truth non-b-Jet p_{T};p_{T} [GeV];Jets", 100, 0.0, 200.0);
+   TH1F *h_true_not_bjet_eta = new TH1F("h_true_not_bjet_eta", "Truth non-b-Jet #eta;#eta;Jets", 100, -5.0, 5.0);
+   TH1F *h_true_not_bjet_phi = new TH1F("h_true_not_bjet_phi", "Truth non-b-Jet #phi;#phi [rad];Jets", 100, -TMath::Pi(), TMath::Pi());
+
    TH1F *h_delta_r = new TH1F("h_delta_r", "#DeltaR (reco, truth);#DeltaR;Pairs", 100, 0.0, 10.0);
    TH1F *h_delta_r_matched_pairs = new TH1F("h_delta_r_matched_pairs", "#DeltaR matched pairs;#DeltaR;Pairs", 100, 0.0, 10.0);
+
+   TH1F *h_matched_bjet_pt = new TH1F("h_matched_bjet_pT", "Matched reco b-Jet p_{T};p_{T} [GeV];Jets", 100, 0.0, 200.0);
+   TH1F *h_matched_bjet_eta = new TH1F("h_matched_bjet_eta", "Matched reco b-Jet #eta;#eta;Jets", 100, -5.0, 5.0);
+   TH1F *h_matched_bjet_phi = new TH1F("h_matched_bjet_phi", "Matched reco b-Jet #phi;#phi [rad];Jets", 100, -TMath::Pi(), TMath::Pi());
+
+   TH1F *h_matched_not_bjet_pt = new TH1F("h_matched_not_bjet_pT", "Matched reco non-b-Jet p_{T};p_{T} [GeV];Jets", 100, 0.0, 200.0);
+   TH1F *h_matched_not_bjet_eta = new TH1F("h_matched_not_bjet_eta", "Matched reco non-b-Jet #eta;#eta;Jets", 100, -5.0, 5.0);
+   TH1F *h_matched_not_bjet_phi = new TH1F("h_matched_not_bjet_phi", "Matched reco non-b-Jet #phi;#phi [rad];Jets", 100, -TMath::Pi(), TMath::Pi());
+
+   TH1F *h_discriminant_b = new TH1F("h_discriminant_b", "GN discriminant D_{b}",100, -20.0, 20.0);
 
    h_jet_pt->SetOption("HIST");
    h_jet_eta->SetOption("HIST");
@@ -44,8 +66,26 @@ void bjetEventLoop::Loop()
    h_true_jet_eta->SetOption("HIST");
    h_true_jet_phi->SetOption("HIST");
 
+   h_true_bjet_pt->SetOption("HIST");
+   h_true_bjet_eta->SetOption("HIST");
+   h_true_bjet_phi->SetOption("HIST");
+
+   h_true_not_bjet_pt->SetOption("HIST");
+   h_true_not_bjet_eta->SetOption("HIST");
+   h_true_not_bjet_phi->SetOption("HIST");
+
    h_delta_r->SetOption("HIST");
    h_delta_r_matched_pairs->SetOption("HIST");
+
+   h_matched_bjet_pt->SetOption("HIST");
+   h_matched_bjet_eta->SetOption("HIST");
+   h_matched_bjet_phi->SetOption("HIST");
+
+   h_matched_not_bjet_pt->SetOption("HIST");
+   h_matched_not_bjet_eta->SetOption("HIST");
+   h_matched_not_bjet_phi->SetOption("HIST");
+
+   h_discriminant_b->SetOption("HIST");
 
    // Get the total number of events in the tree/chain
    Long64_t nentries = fChain->GetEntriesFast();
@@ -69,16 +109,38 @@ void bjetEventLoop::Loop()
             h_delta_r->Fill(dr, MC_weight);
             if (dr < 0.3)
             {
-               // if jet is matched to b flavour
                h_jet_pt->Fill(jet_pt->at(i), MC_weight);
                h_jet_eta->Fill(jet_eta->at(i), MC_weight);
                h_jet_phi->Fill(jet_phi->at(i), MC_weight);
-               h_delta_r_matched_pairs->Fill(dr,MC_weight);
+               h_delta_r_matched_pairs->Fill(dr, MC_weight);
+
+               if (truth_jet_flavor->at(j) == 5) {
+                  h_matched_bjet_pt->Fill(jet_pt->at(i), MC_weight);
+                  h_matched_bjet_eta->Fill(jet_eta->at(i), MC_weight);
+                  h_matched_bjet_phi->Fill(jet_phi->at(i), MC_weight);
+               } else {
+                  h_matched_not_bjet_pt->Fill(jet_pt->at(i), MC_weight);
+                  h_matched_not_bjet_eta->Fill(jet_eta->at(i), MC_weight);
+                  h_matched_not_bjet_phi->Fill(jet_phi->at(i), MC_weight);
+               }
+
+               double D_b = log(jet_GN2v01_pb->at(i) / (f_c * jet_GN2v01_pc->at(i) + f_tau * jet_GN2v01_ptau->at(i) + (1 - f_c - f_tau) * jet_GN2v01_pu->at(i)));
+               h_discriminant_b->Fill(D_b, MC_weight);
             }
          }
          h_true_jet_pt->Fill(truth_jet_pt->at(j), MC_weight);
          h_true_jet_eta->Fill(truth_jet_eta->at(j), MC_weight);
          h_true_jet_phi->Fill(truth_jet_phi->at(j), MC_weight);
+
+         if (truth_jet_flavor->at(j) == 5) {
+            h_true_bjet_pt->Fill(truth_jet_pt->at(j), MC_weight);
+            h_true_bjet_eta->Fill(truth_jet_eta->at(j), MC_weight);
+            h_true_bjet_phi->Fill(truth_jet_phi->at(j), MC_weight);
+         } else {
+            h_true_not_bjet_pt->Fill(truth_jet_pt->at(j), MC_weight);
+            h_true_not_bjet_eta->Fill(truth_jet_eta->at(j), MC_weight);
+            h_true_not_bjet_phi->Fill(truth_jet_phi->at(j), MC_weight);
+         }
       }
    }
    output->Write();
