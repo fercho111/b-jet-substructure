@@ -56,7 +56,16 @@ void bjetEventLoop::Loop()
    TH1F *h_matched_not_bjet_eta = new TH1F("h_matched_not_bjet_eta", "Matched reco non-b-Jet #eta;#eta;Jets", 100, -5.0, 5.0);
    TH1F *h_matched_not_bjet_phi = new TH1F("h_matched_not_bjet_phi", "Matched reco non-b-Jet #phi;#phi [rad];Jets", 100, -TMath::Pi(), TMath::Pi());
 
-   TH1F *h_discriminant_b = new TH1F("h_discriminant_b", "GN discriminant D_{b}",100, -20.0, 20.0);
+   TH1F *h_discriminant_b_bjet = new TH1F("h_discriminant_b_bjet", "GN discriminant D_{b} b-jets",100, -20.0, 20.0);
+   TH1F *h_discriminant_b_not_bjet = new TH1F("h_discriminant_b_not_bjet", "GN discriminant D_{b} non b-jets",100, -20.0, 20.0);
+
+   TH1F *h_d_b_passing_bjet_pt = new TH1F("h_d_b_passing_bjet_pt", "pT for D_{b} passing b-jets", 100, 0.0, 200.0);
+   TH1F *h_d_b_passing_bjet_eta = new TH1F("h_d_b_passing_bjet_eta", "#eta for D_{b} passing b-jets", 100, -5.0, 5.0);
+   TH1F *h_d_b_passing_bjet_phi = new TH1F("h_d_b_passing_bjet_phi", "#phi for D_{b} passing b-jets", 100, -TMath::Pi(), TMath::Pi());
+   TH1F *h_d_b_passing_not_bjet_pt = new TH1F("h_d_b_passing_not_bjet_pt", "pT for D_{b} passing b-jets", 100, 0.0, 200.0);
+   TH1F *h_d_b_passing_not_bjet_eta = new TH1F("h_d_b_passing_not_bjet_eta", "#eta for D_{b} passing b-jets", 100, -5.0, 5.0);
+   TH1F *h_d_b_passing_not_bjet_phi = new TH1F("h_d_b_passing_not_bjet_phi", "#phi for D_{b} passing b-jets", 100, -TMath::Pi(), TMath::Pi());
+
 
    h_jet_pt->SetOption("HIST");
    h_jet_eta->SetOption("HIST");
@@ -85,7 +94,15 @@ void bjetEventLoop::Loop()
    h_matched_not_bjet_eta->SetOption("HIST");
    h_matched_not_bjet_phi->SetOption("HIST");
 
-   h_discriminant_b->SetOption("HIST");
+   h_discriminant_b_bjet->SetOption("HIST");
+   h_discriminant_b_not_bjet->SetOption("HIST");
+
+   h_d_b_passing_bjet_pt->SetOption("HIST");
+   h_d_b_passing_bjet_eta->SetOption("HIST");
+   h_d_b_passing_bjet_phi->SetOption("HIST");
+   h_d_b_passing_not_bjet_pt->SetOption("HIST");
+   h_d_b_passing_not_bjet_eta->SetOption("HIST");
+   h_d_b_passing_not_bjet_phi->SetOption("HIST");
 
    // Get the total number of events in the tree/chain
    Long64_t nentries = fChain->GetEntriesFast();
@@ -107,6 +124,7 @@ void bjetEventLoop::Loop()
             double dphi = fabs(TVector2::Phi_mpi_pi(jet_phi->at(i) - truth_jet_phi->at(j)));
             double dr = sqrt(deta*deta + dphi*dphi);
             h_delta_r->Fill(dr, MC_weight);
+            // TODO: check if there is more than one reco jet matched to truth
             if (dr < 0.3)
             {
                h_jet_pt->Fill(jet_pt->at(i), MC_weight);
@@ -123,9 +141,28 @@ void bjetEventLoop::Loop()
                   h_matched_not_bjet_eta->Fill(jet_eta->at(i), MC_weight);
                   h_matched_not_bjet_phi->Fill(jet_phi->at(i), MC_weight);
                }
-
                double D_b = log(jet_GN2v01_pb->at(i) / (f_c * jet_GN2v01_pc->at(i) + f_tau * jet_GN2v01_ptau->at(i) + (1 - f_c - f_tau) * jet_GN2v01_pu->at(i)));
-               h_discriminant_b->Fill(D_b, MC_weight);
+               if (jet_HadronConeExclTruthLabelID->at(i) == 5)
+               {
+                  h_discriminant_b_bjet->Fill(D_b, MC_weight);
+                  // we propose Db cut on Db==0
+                  if (D_b > 0)
+                  {
+                     h_d_b_passing_bjet_pt->Fill(jet_pt->at(i), MC_weight);
+                     h_d_b_passing_bjet_eta->Fill(jet_eta->at(i), MC_weight);
+                     h_d_b_passing_bjet_phi->Fill(jet_phi->at(i), MC_weight);
+                  }
+               }
+               else
+               {
+                  h_discriminant_b_not_bjet->Fill(D_b, MC_weight);
+                  if (D_b > 0)
+                  {
+                     h_d_b_passing_not_bjet_pt->Fill(jet_pt->at(i), MC_weight);
+                     h_d_b_passing_not_bjet_eta->Fill(jet_eta->at(i), MC_weight);
+                     h_d_b_passing_not_bjet_phi->Fill(jet_phi->at(i), MC_weight);
+                  }
+               }
             }
          }
          h_true_jet_pt->Fill(truth_jet_pt->at(j), MC_weight);
@@ -143,6 +180,12 @@ void bjetEventLoop::Loop()
          }
       }
    }
+
+   double efficiency = h_d_b_passing_bjet_pt->Integral() / h_matched_bjet_pt->Integral();
+   double purity = h_d_b_passing_bjet_pt->Integral() / (h_d_b_passing_bjet_pt->Integral() + h_d_b_passing_not_bjet_pt->Integral());
+   std::cout << "Efficiency (b-jet acceptance): " << efficiency << std::endl;
+   std::cout << "Purity (b-jet fraction after cut): " << purity << std::endl;
+
    output->Write();
    output->Close();
 }
