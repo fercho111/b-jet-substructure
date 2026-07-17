@@ -56,8 +56,17 @@ void bjetEventLoop::Loop()
    TH1F *h_matched_not_bjet_eta = new TH1F("h_matched_not_bjet_eta", "Matched reco non-b-Jet #eta;#eta;Jets", 100, -5.0, 5.0);
    TH1F *h_matched_not_bjet_phi = new TH1F("h_matched_not_bjet_phi", "Matched reco non-b-Jet #phi;#phi [rad];Jets", 100, -TMath::Pi(), TMath::Pi());
 
-   TH1F *h_discriminant_b_bjet = new TH1F("h_discriminant_b_bjet", "GN discriminant D_{b} b-jets",100, -20.0, 20.0);
-   TH1F *h_discriminant_b_not_bjet = new TH1F("h_discriminant_b_not_bjet", "GN discriminant D_{b} non b-jets",100, -20.0, 20.0);
+   TH1F *h_discriminant_b_bjet = new TH1F("h_discriminant_b_bjet", "GN discriminant D_{b} b-jets",100, -10.0, 20.0);
+   TH1F *h_discriminant_b_not_bjet = new TH1F("h_discriminant_b_not_bjet", "GN discriminant D_{b} non b-jets",100, -10.0, 20.0);
+
+   TH1F *h_jet_cut_pt = new TH1F("h_jet_cut_pt", "Reconstructed Jet p_{T} (cut);p_{T} [GeV];Jets", 100, 0.0, 200.0);
+   TH1F *h_jet_cut_eta = new TH1F("h_jet_cut_eta", "Reconstructed Jet #eta (cut);#eta;Jets", 100, -5.0, 5.0);
+   TH1F *h_jet_cut_phi = new TH1F("h_jet_cut_phi", "Reconstructed Jet #phi (cut);#phi [rad];Jets", 100, -TMath::Pi(), TMath::Pi());
+
+   TH1F *h_true_jet_b_pt = new TH1F("h_true_jet_b_pt", "Truth Jet p_{T} (b);p_{T} [GeV];Jets", 100, 0.0, 200.0);
+   TH1F *h_true_jet_b_eta = new TH1F("h_true_jet_b_eta", "Truth Jet #eta (b);#eta;Jets", 100, -5.0, 5.0);
+   TH1F *h_true_jet_b_phi = new TH1F("h_true_jet_b_phi", "Truth Jet #phi (b);#phi [rad];Jets", 100, -TMath::Pi(), TMath::Pi());
+
 
    TH1F *h_d_b_passing_bjet_pt = new TH1F("h_d_b_passing_bjet_pt", "pT for D_{b} passing b-jets", 100, 0.0, 200.0);
    TH1F *h_d_b_passing_bjet_eta = new TH1F("h_d_b_passing_bjet_eta", "#eta for D_{b} passing b-jets", 100, -5.0, 5.0);
@@ -96,6 +105,15 @@ void bjetEventLoop::Loop()
 
    h_discriminant_b_bjet->SetOption("HIST");
    h_discriminant_b_not_bjet->SetOption("HIST");
+
+   h_jet_cut_pt->SetOption("HIST");
+   h_jet_cut_eta->SetOption("HIST");
+   h_jet_cut_phi->SetOption("HIST");
+
+   h_true_jet_b_pt->SetOption("HIST");
+   h_true_jet_b_eta->SetOption("HIST");
+   h_true_jet_b_phi->SetOption("HIST");
+
 
    h_d_b_passing_bjet_pt->SetOption("HIST");
    h_d_b_passing_bjet_eta->SetOption("HIST");
@@ -142,6 +160,18 @@ void bjetEventLoop::Loop()
                   h_matched_not_bjet_phi->Fill(jet_phi->at(i), MC_weight);
                }
                double D_b = log(jet_GN2v01_pb->at(i) / (f_c * jet_GN2v01_pc->at(i) + f_tau * jet_GN2v01_ptau->at(i) + (1 - f_c - f_tau) * jet_GN2v01_pu->at(i)));
+               if (D_b > 0)
+               {
+                  h_jet_cut_pt->Fill(jet_pt->at(i), MC_weight);
+                  h_jet_cut_eta->Fill(jet_eta->at(i), MC_weight);
+                  h_jet_cut_phi->Fill(jet_phi->at(i), MC_weight);
+               }
+               if (jet_HadronConeExclTruthLabelID->at(i) == 5)
+               {
+                  h_true_jet_b_pt->Fill(jet_pt->at(i), MC_weight);
+                  h_true_jet_b_eta->Fill(jet_eta->at(i), MC_weight);
+                  h_true_jet_b_phi->Fill(jet_phi->at(i), MC_weight);
+               }
                if (jet_HadronConeExclTruthLabelID->at(i) == 5)
                {
                   h_discriminant_b_bjet->Fill(D_b, MC_weight);
@@ -185,6 +215,16 @@ void bjetEventLoop::Loop()
    double purity = h_d_b_passing_bjet_pt->Integral() / (h_d_b_passing_bjet_pt->Integral() + h_d_b_passing_not_bjet_pt->Integral());
    std::cout << "Efficiency (b-jet acceptance): " << efficiency << std::endl;
    std::cout << "Purity (b-jet fraction after cut): " << purity << std::endl;
+
+   TH1F *h_efficiency_pt = new TH1F("h_efficiency_pt", "Efficiency vs p_{T};p_{T} [GeV];Efficiency", 100, 0.0, 200.0);
+   TH1F *h_purity_pt = new TH1F("h_purity_pt", "Purity vs p_{T};p_{T} [GeV];Purity", 100, 0.0, 200.0);
+
+   h_efficiency_pt->Divide(h_d_b_passing_bjet_pt, h_true_jet_b_pt, 1.0, 1.0, "B");
+   h_purity_pt->Divide(h_d_b_passing_bjet_pt, h_jet_cut_pt, 1.0, 1.0, "B");
+
+   h_jet_cut_pt->Scale(purity / efficiency);
+   h_jet_cut_eta->Scale(purity / efficiency);
+   h_jet_cut_phi->Scale(purity / efficiency);
 
    output->Write();
    output->Close();
