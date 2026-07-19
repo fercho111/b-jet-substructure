@@ -2,21 +2,21 @@
     // Input: array of tracks (their properties) and one jet
     // Output: array of tracks belonging to the jet
     
-    //Make ghosts from tracks
+    // Make ghosts from tracks
     vector<fastjet::PseudoJet> ghosts;
     vector<fastjet::PseudoJet> tracks;
     double ghost_pT = 1e-100;
     TLorentzVector g, t;
     for (unsigned int j=0; j<track_pt->size(); j++){
-      g.SetPtEtaPhiM(ghost_pT, track_eta->at(j), track_phi->at(j), 0.0); //We consider massless ghosts
-      t.SetPtEtaPhiM(track_pt->at(j), track_eta->at(j), track_phi->at(j), 0.14); //We consider charged pions
+      g.SetPtEtaPhiM(ghost_pT, track_eta->at(j), track_phi->at(j), 0.0); // We consider massless ghosts
+      t.SetPtEtaPhiM(track_pt->at(j), track_eta->at(j), track_phi->at(j), 0.14); // We consider charged pions
       fastjet::PseudoJet ghost(g.Px(), g.Py(), g.Pz(), g.E());
       fastjet::PseudoJet track(t.Px(), t.Py(), t.Pz(), t.E());
       ghosts.push_back(ghost);
       tracks.push_back(track);
     }
 
-    //Associate ghosts to jet
+    // Associate ghosts to jet
     vector<fastjet::PseudoJet> constituents;
     fastjet::JetDefinition jet_def(fastjet::antikt_algorithm, R); // R=0.4
     if (ghosts.size()>0 && jet.E()>0){
@@ -27,7 +27,7 @@
       constituents.erase(constituents.begin()); // We erase the jet from constituents
     }
 
-    //Match tracks and ghosts
+    // Match tracks and ghosts
     vector<fastjet::PseudoJet> selected_tracks;
     if (constituents.size()>0){
       for (auto constituent:constituents){
