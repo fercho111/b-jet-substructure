@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Mon Jul 13 12:19:51 2026 by ROOT version 6.40.02
+// Mon Jul 20 10:12:45 2026 by ROOT version 6.40.02
 // from TTree AntiKt4HI/skimmed tree
 // found on file: MC_JZ1_part1.root
 //////////////////////////////////////////////////////////
@@ -28,6 +28,7 @@ public :
    vector<float>   *jet_pt;
    vector<float>   *jet_eta;
    vector<float>   *jet_phi;
+   vector<float>   *jet_m;
    vector<float>   *jet_GN2v01_pb;
    vector<float>   *jet_GN2v01_pc;
    vector<float>   *jet_GN2v01_pu;
@@ -37,6 +38,7 @@ public :
    vector<float>   *truth_jet_pt;
    vector<float>   *truth_jet_eta;
    vector<float>   *truth_jet_phi;
+   vector<float>   *truth_jet_m;
    vector<int>     *truth_jet_flavor;
    vector<float>   *track_pt;
    vector<float>   *track_eta;
@@ -55,6 +57,7 @@ public :
    TBranch        *b_jet_pt;   ///<!
    TBranch        *b_jet_eta;   ///<!
    TBranch        *b_jet_phi;   ///<!
+   TBranch        *b_jet_m;   ///<!
    TBranch        *b_jet_GN2v01_pb;   ///<!
    TBranch        *b_jet_GN2v01_pc;   ///<!
    TBranch        *b_jet_GN2v01_pu;   ///<!
@@ -64,6 +67,7 @@ public :
    TBranch        *b_truth_jet_pt;   ///<!
    TBranch        *b_truth_jet_eta;   ///<!
    TBranch        *b_truth_jet_phi;   ///<!
+   TBranch        *b_truth_jet_m;   ///<!
    TBranch        *b_truth_jet_flavor;   ///<!
    TBranch        *b_track_pt;   ///<!
    TBranch        *b_track_eta;   ///<!
@@ -143,6 +147,7 @@ void bjetEventLoop::Init(TTree *tree)
    jet_pt = 0;
    jet_eta = 0;
    jet_phi = 0;
+   jet_m = 0;
    jet_GN2v01_pb = 0;
    jet_GN2v01_pc = 0;
    jet_GN2v01_pu = 0;
@@ -152,6 +157,7 @@ void bjetEventLoop::Init(TTree *tree)
    truth_jet_pt = 0;
    truth_jet_eta = 0;
    truth_jet_phi = 0;
+   truth_jet_m = 0;
    truth_jet_flavor = 0;
    track_pt = 0;
    track_eta = 0;
@@ -174,6 +180,7 @@ void bjetEventLoop::Init(TTree *tree)
    fChain->SetBranchAddress("jet_pt", &jet_pt, &b_jet_pt);
    fChain->SetBranchAddress("jet_eta", &jet_eta, &b_jet_eta);
    fChain->SetBranchAddress("jet_phi", &jet_phi, &b_jet_phi);
+   fChain->SetBranchAddress("jet_m", &jet_m, &b_jet_m);
    fChain->SetBranchAddress("jet_GN2v01_pb", &jet_GN2v01_pb, &b_jet_GN2v01_pb);
    fChain->SetBranchAddress("jet_GN2v01_pc", &jet_GN2v01_pc, &b_jet_GN2v01_pc);
    fChain->SetBranchAddress("jet_GN2v01_pu", &jet_GN2v01_pu, &b_jet_GN2v01_pu);
@@ -183,6 +190,7 @@ void bjetEventLoop::Init(TTree *tree)
    fChain->SetBranchAddress("truth_jet_pt", &truth_jet_pt, &b_truth_jet_pt);
    fChain->SetBranchAddress("truth_jet_eta", &truth_jet_eta, &b_truth_jet_eta);
    fChain->SetBranchAddress("truth_jet_phi", &truth_jet_phi, &b_truth_jet_phi);
+   fChain->SetBranchAddress("truth_jet_m", &truth_jet_m, &b_truth_jet_m);
    fChain->SetBranchAddress("truth_jet_flavor", &truth_jet_flavor, &b_truth_jet_flavor);
    fChain->SetBranchAddress("track_pt", &track_pt, &b_track_pt);
    fChain->SetBranchAddress("track_eta", &track_eta, &b_track_eta);
