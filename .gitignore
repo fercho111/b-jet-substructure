@@ -5,3 +5,5 @@
 build/
 plot*
 compare*
+*.pdf
+*.md
